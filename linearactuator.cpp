@@ -4,6 +4,9 @@
 #include "QCoreApplication" // for delay
 
 bool connected = false;
+bool isOscillating = false; // oscillation function
+bool isMoving = false; // oscillation stuff
+bool maxHit = false; // oscillation stuff
 bool done = false; // control loop bool
 
 int upperPosLimit = 950; // upper extension limit for actuator
@@ -12,6 +15,10 @@ int upperVelLimit = 1000;
 int lowerVelLimit = 100;
 
 int loopRefreshRate = 60; // Hz
+
+// Default oscillation is maxed parameters.
+int oscMin = lowerPosLimit;
+int oscMax = upperPosLimit;
 
 Firgelli actuator; // Object containing driver interface for linear actuator
 
@@ -68,6 +75,43 @@ void linearActuator::runActuator() // main control loop fcn
     {
         position = getPosition();
         actuatorSendPosition(position);
+
+        // Oscillation function
+        if (isOscillating == true)
+        {
+            if (isMoving == false)
+            {
+                if (position <= oscMax)
+                {
+                    if(maxHit == false)
+                    {
+                        setPosition(oscMax);
+                        isMoving = true;
+                        maxHit = true;
+                    }
+                    else
+                    {
+                        setPosition(oscMin);
+                    }
+                }
+                else
+                {
+                    setPosition(oscMin);
+                    isMoving = true;
+                }
+            }
+
+            if ((oscMax - position) <= (int)(settings.accuracy/2))
+            {
+                isMoving = false;
+            }
+            if ((position - oscMin) <= (int)(settings.accuracy/2))
+            {
+                isMoving = false;
+                maxHit = false;
+            }
+        }
+
         delay(refreshRate);
     }
 }
@@ -82,12 +126,6 @@ void linearActuator::setPosition(int position) // sets position
     sendPacket(commands.set_position,position);
 }
 
-void linearActuator::setVelocity(int velocity) // sets velocity
-{
-    sendPacket(commands.set_speed,velocity);
-    actuatorSendVelocity(velocity);
-}
-
 void linearActuator::actuatorReceivePosition(int input) // position input from GUI
 {
     int position = input;
@@ -99,7 +137,18 @@ void linearActuator::actuatorReceivePosition(int input) // position input from G
     {
         position = lowerPosLimit;
     }
+
+    if (isOscillating == true)
+    {
+        toggleOscillation(oscMin,oscMax);
+    }
     setPosition(position);
+}
+
+void linearActuator::setVelocity(int velocity) // sets velocity
+{
+    sendPacket(commands.set_speed,velocity);
+    actuatorSendVelocity(velocity);
 }
 
 void linearActuator::actuatorReceiveVelocity(int input) // velocity input from GUI
@@ -114,6 +163,27 @@ void linearActuator::actuatorReceiveVelocity(int input) // velocity input from G
         velocity = lowerVelLimit;
     }
     setVelocity(velocity);
+}
+
+void linearActuator::actuatorReceiveOscillate(int min, int max)
+{
+    toggleOscillation(min,max);
+}
+
+void linearActuator::toggleOscillation(int min, int max)
+{
+    if (isOscillating == false) // toggle to true
+    {
+        actuatorSendOscillate(true);
+        isOscillating = true;
+        oscMin = min;
+        oscMax = max;
+    }
+    else if (isOscillating == true) // toggle to false
+    {
+        actuatorSendOscillate(false);
+        isOscillating = false;
+    }
 }
 
 int linearActuator::sendPacket(int commandCode, int value) // builds packet to send to board

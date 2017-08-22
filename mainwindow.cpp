@@ -2,8 +2,6 @@
 #include "ui_mainwindow.h"
 #include "linearactuator.h"
 
-// Hi i'm matt
-
 bool actuatorConnection = false; // For crash prevention via if() checks
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -33,6 +31,18 @@ void MainWindow::actuatorFetchPosition(int input)
 void MainWindow::actuatorFetchVelocity(int input)
 {
     ui->velStatus->setText(QString::number(input));
+}
+
+void MainWindow::actuatorFetchOscillate(bool state)
+{
+    if (state == true) // is oscillating
+    {
+        ui->oscillateButton->setText(tr("Stop!"));
+    }
+    else if (state == false) // is not oscillating
+    {
+        ui->oscillateButton->setText(tr("Oscillate!"));
+    }
 }
 
 void MainWindow::initializeActuatorThread()
@@ -70,6 +80,9 @@ void MainWindow::initializeActuatorThread()
     connect(this,SIGNAL(actuatorPushVelocity(int)),actuatorWorker,SLOT(actuatorReceiveVelocity(int)));
     connect(actuatorWorker,SIGNAL(actuatorSendVelocity(int)),this,SLOT(actuatorFetchVelocity(int)));
 
+    // Oscillator toggel
+    connect(this,SIGNAL(actuatorPushOscillate(int, int)),actuatorWorker,SLOT(actuatorReceiveOscillate(int, int)));
+    connect(actuatorWorker,SIGNAL(actuatorSendOscillate(bool)),this,SLOT(actuatorFetchOscillate(bool)));
 }
 
 // Button functions
@@ -92,4 +105,9 @@ void MainWindow::on_velButton_clicked()
     {
         actuatorPushVelocity(ui->velInput->text().toInt());
     }
+}
+
+void MainWindow::on_oscillateButton_clicked()
+{
+    actuatorPushOscillate(ui->oscMin->text().toInt(),ui->oscMax->text().toInt());
 }

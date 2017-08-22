@@ -19,6 +19,7 @@ public slots:
     void actuatorConnected();
     void actuatorFetchPosition(int input);
     void actuatorFetchVelocity(int input);
+    void actuatorFetchOscillate(bool state);
 
 private slots:
     // Buttons!
@@ -28,6 +29,8 @@ private slots:
 
     void on_velButton_clicked();
 
+    void on_oscillateButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     void initializeActuatorThread();
@@ -36,6 +39,7 @@ signals:
     void actuatorConnect();
     void actuatorPushPosition(int input);
     void actuatorPushVelocity(int input);
+    void actuatorPushOscillate(int min, int max);
 };
 
 #endif // MAINWINDOW_H

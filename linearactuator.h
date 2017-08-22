@@ -60,6 +60,7 @@ private:
     int sendPacket(int commandCode, int value);
     void processFinished();
     void delay(int millisecondsToWait);
+    void toggleOscillation(int min, int max);
 
 public slots:
     // Startup
@@ -69,12 +70,14 @@ public slots:
     // Controls
     void actuatorReceivePosition(int input);
     void actuatorReceiveVelocity(int input);
+    void actuatorReceiveOscillate(int min, int max);
 
 signals:
     // Feedback, generally
     void actuatorConnected();
     void actuatorSendPosition(int);
     void actuatorSendVelocity(int);
+    void actuatorSendOscillate(bool);
     void finished();
 };
 
