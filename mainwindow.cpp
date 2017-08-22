@@ -2,6 +2,8 @@
 #include "ui_mainwindow.h"
 #include "linearactuator.h"
 
+// Hi i'm matt
+
 bool actuatorConnection = false; // For crash prevention via if() checks
 
 MainWindow::MainWindow(QWidget *parent) :
