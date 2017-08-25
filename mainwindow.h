@@ -17,6 +17,7 @@ public:
 
 public slots:
     void actuatorConnected();
+    void actuatorFetchDT(int input);
     void actuatorFetchPosition(int input);
     void actuatorFetchVelocity(int input);
     void actuatorFetchOscillate(bool state);

@@ -3,6 +3,7 @@
 #include "linearactuator.h"
 
 bool actuatorConnection = false; // For crash prevention via if() checks
+float actuatorStrokeLength = 30; // mm
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -23,14 +24,26 @@ void MainWindow::actuatorConnected()
     actuatorConnection = true;
 }
 
+void MainWindow::actuatorFetchDT(int input)
+{
+    float Hz = 1000.0/input;
+    ui->label_Refresh->setText("Refresh Rate: " + QString::number(Hz, 'f', 1) + "Hz");
+}
+
 void MainWindow::actuatorFetchPosition(int input)
 {
     ui->posStatus->setText(QString::number(input));
+
+    float realPosition = actuatorStrokeLength*input/1024;
+    ui->posStatusEngr->setText(QString::number(realPosition, 'f', 2) + " mm");
 }
 
 void MainWindow::actuatorFetchVelocity(int input)
 {
     ui->velStatus->setText(QString::number(input));
+
+    float realVelocity = 100.0*input/1024;
+    ui->velStatusEngr->setText(QString::number(realVelocity, 'f', 2) + "%");
 }
 
 void MainWindow::actuatorFetchOscillate(bool state)
@@ -80,9 +93,13 @@ void MainWindow::initializeActuatorThread()
     connect(this,SIGNAL(actuatorPushVelocity(int)),actuatorWorker,SLOT(actuatorReceiveVelocity(int)));
     connect(actuatorWorker,SIGNAL(actuatorSendVelocity(int)),this,SLOT(actuatorFetchVelocity(int)));
 
-    // Oscillator toggel
+    // Oscillator toggle
     connect(this,SIGNAL(actuatorPushOscillate(int, int)),actuatorWorker,SLOT(actuatorReceiveOscillate(int, int)));
     connect(actuatorWorker,SIGNAL(actuatorSendOscillate(bool)),this,SLOT(actuatorFetchOscillate(bool)));
+
+    // Get loop time
+    connect(actuatorWorker,SIGNAL(actuatorSendDT(int)),this,SLOT(actuatorFetchDT(int)));
+
 }
 
 // Button functions

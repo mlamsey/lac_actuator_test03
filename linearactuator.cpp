@@ -14,9 +14,9 @@ int lowerPosLimit = 50; // lower extension limit for actuator
 int upperVelLimit = 1000;
 int lowerVelLimit = 100;
 
-int loopRefreshRate = 60; // Hz
+int loopRefreshRate = 2; // Hz
 
-// Default oscillation is maxed parameters.
+// Default oscillation uses maxed parameters.
 int oscMin = lowerPosLimit;
 int oscMax = upperPosLimit;
 
@@ -59,46 +59,46 @@ void linearActuator::initializeDefaults() // returns board to default settings
 
 void linearActuator::runActuator() // main control loop fcn
 {
-    int refreshRate = (int)(1000/loopRefreshRate); // Hz->ms
-    printf("Refresh rate: %ims\n",refreshRate);
-
-    if (refreshRate << 5) // can't be too speedy, 5ms arbitrary minimum
-    {
-        refreshRate = 5;
-    }
 
     // Initialize loop feedback variables
     int position = 0;
+    int prevTime = 0;
+    int thisTime = 0;
+    int dT = 0;
 
     // Master control loop
     while (done == false)
     {
+        // Get time feedback
+        prevTime = thisTime;
+        thisTime = QDateTime::currentMSecsSinceEpoch();
+        dT = thisTime - prevTime;
+        actuatorSendDT(dT);
+
+        // Get position feedback
         position = getPosition();
         actuatorSendPosition(position);
 
         // Oscillation function
-        if (isOscillating == true)
+        if (isOscillating == true && isMoving == false)
         {
-            if (isMoving == false)
+            if (position <= oscMax)
             {
-                if (position <= oscMax)
+                if(maxHit == false)
                 {
-                    if(maxHit == false)
-                    {
-                        setPosition(oscMax);
-                        isMoving = true;
-                        maxHit = true;
-                    }
-                    else
-                    {
-                        setPosition(oscMin);
-                    }
+                    setPosition(oscMax);
+                    isMoving = true;
+                    maxHit = true;
                 }
                 else
                 {
                     setPosition(oscMin);
-                    isMoving = true;
                 }
+            }
+            else
+            {
+                setPosition(oscMin);
+                isMoving = true;
             }
 
             if ((oscMax - position) <= (int)(settings.accuracy/2))
@@ -111,8 +111,8 @@ void linearActuator::runActuator() // main control loop fcn
                 maxHit = false;
             }
         }
-
-        delay(refreshRate);
+        //delay(100);
+        QCoreApplication::processEvents( QEventLoop::AllEvents, 100 );
     }
 }
 

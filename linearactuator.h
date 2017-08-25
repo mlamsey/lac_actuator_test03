@@ -75,6 +75,7 @@ public slots:
 signals:
     // Feedback, generally
     void actuatorConnected();
+    void actuatorSendDT(int);
     void actuatorSendPosition(int);
     void actuatorSendVelocity(int);
     void actuatorSendOscillate(bool);
