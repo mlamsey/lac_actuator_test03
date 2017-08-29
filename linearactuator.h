@@ -84,6 +84,7 @@ signals:
     void actuatorSendPositionMetric(float);
     void actuatorSendVelocityRaw(int);
     void actuatorSendVelocityMetric(float);
+    void actuatorSendVelocityReal(float);
     void actuatorSendOscillate(bool);
     void finished();
 };

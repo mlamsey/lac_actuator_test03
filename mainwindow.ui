@@ -264,6 +264,19 @@
      <string>Refresh Time:</string>
     </property>
    </widget>
+   <widget class="QLabel" name="velStatusReal">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>190</y>
+      <width>91</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Actual Speed</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">

@@ -49,6 +49,11 @@ void MainWindow::actuatorFetchVelocityMetric(float input)
     ui->velStatusEngr->setText(QString::number(input, 'f', 2) + "%");
 }
 
+void MainWindow::actuatorFetchVelocityReal(float input)
+{
+    ui->velStatusReal->setText(QString::number(input, 'f', 2) + "mm/s");
+}
+
 void MainWindow::actuatorFetchOscillate(bool state)
 {
     if (state == true) // is oscillating
@@ -97,6 +102,7 @@ void MainWindow::initializeActuatorThread()
     connect(this,SIGNAL(actuatorPushVelocity(int)),actuatorWorker,SLOT(actuatorReceiveVelocity(int)));
     connect(actuatorWorker,SIGNAL(actuatorSendVelocityRaw(int)),this,SLOT(actuatorFetchVelocityRaw(int)));
     connect(actuatorWorker,SIGNAL(actuatorSendVelocityMetric(float)),this,SLOT(actuatorFetchVelocityMetric(float)));
+    connect(actuatorWorker,SIGNAL(actuatorSendVelocityReal(float)),this,SLOT(actuatorFetchVelocityReal(float)));
 
     // Oscillator toggle
     connect(this,SIGNAL(actuatorPushOscillate(int, int)),actuatorWorker,SLOT(actuatorReceiveOscillate(int, int)));

@@ -22,6 +22,7 @@ public slots:
     void actuatorFetchPositionMetric(float input);
     void actuatorFetchVelocityRaw(int input);
     void actuatorFetchVelocityMetric(float input);
+    void actuatorFetchVelocityReal(float input);
     void actuatorFetchOscillate(bool state);
 
 private slots:

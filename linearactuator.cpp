@@ -39,6 +39,7 @@ void linearActuator::actuatorConnect() // connects to board
 {
     if (connected == false)
     {
+        actuator.SetDebug(1);
         actuator.Open(1);
         printf("Linear Actuator Connected.\n");
         emit actuatorConnected(); // signal
@@ -64,9 +65,12 @@ void linearActuator::runActuator() // main control loop fcn
 
     // Initialize loop feedback variables
     int positionRaw = 0;
+    float prevPos = 0;
+    float thisPos = 0;
     int prevTime = 0;
     int thisTime = 0;
     int dT = 0;
+    int velocityReal = 0;
 
     // Master control loop
     while (done == false)
@@ -79,8 +83,13 @@ void linearActuator::runActuator() // main control loop fcn
 
         // Get position feedback
         positionRaw = getPositionRaw();
+        prevPos = thisPos;
+        thisPos = convertPosToMetric(positionRaw);
         actuatorSendPositionRaw(positionRaw);
-        actuatorSendPositionMetric(convertPosToMetric(positionRaw));
+        actuatorSendPositionMetric(thisPos);
+
+        velocityReal = (thisPos - prevPos)/dT;
+        actuatorSendVelocityReal(velocityReal);
 
         // Oscillation function
         if (isOscillating == true && isMoving == false)
