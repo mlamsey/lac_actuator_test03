@@ -39,7 +39,7 @@ void linearActuator::actuatorConnect() // connects to board
 {
     if (connected == false)
     {
-        actuator.SetDebug(1);
+        //actuator.SetDebug(1);
         actuator.Open(1);
         printf("Linear Actuator Connected.\n");
         emit actuatorConnected(); // signal
