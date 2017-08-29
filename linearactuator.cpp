@@ -14,11 +14,13 @@ int lowerPosLimit = 50; // lower extension limit for actuator
 int upperVelLimit = 1000;
 int lowerVelLimit = 100;
 
-int loopRefreshRate = 2; // Hz
+int loopRefreshRate = 60; // Hz
 
 // Default oscillation uses maxed parameters.
 int oscMin = lowerPosLimit;
 int oscMax = upperPosLimit;
+
+float actuatorStrokeLength = 30; // mm
 
 Firgelli actuator; // Object containing driver interface for linear actuator
 
@@ -54,14 +56,14 @@ void linearActuator::initializeDefaults() // returns board to default settings
     sendPacket(commands.set_accuracy,settings.accuracy);
     setVelocity(settings.velocity);
     setPosition(settings.position);
-    actuatorSendVelocity(settings.velocity);
+    actuatorSendVelocityRaw(settings.velocity);
 }
 
 void linearActuator::runActuator() // main control loop fcn
 {
 
     // Initialize loop feedback variables
-    int position = 0;
+    int positionRaw = 0;
     int prevTime = 0;
     int thisTime = 0;
     int dT = 0;
@@ -76,13 +78,14 @@ void linearActuator::runActuator() // main control loop fcn
         actuatorSendDT(dT);
 
         // Get position feedback
-        position = getPosition();
-        actuatorSendPosition(position);
+        positionRaw = getPositionRaw();
+        actuatorSendPositionRaw(positionRaw);
+        actuatorSendPositionMetric(convertPosToMetric(positionRaw));
 
         // Oscillation function
         if (isOscillating == true && isMoving == false)
         {
-            if (position <= oscMax)
+            if (positionRaw <= oscMax)
             {
                 if(maxHit == false)
                 {
@@ -101,11 +104,11 @@ void linearActuator::runActuator() // main control loop fcn
                 isMoving = true;
             }
 
-            if ((oscMax - position) <= (int)(settings.accuracy/2))
+            if ((oscMax - positionRaw) <= (int)(settings.accuracy/2))
             {
                 isMoving = false;
             }
-            if ((position - oscMin) <= (int)(settings.accuracy/2))
+            if ((positionRaw - oscMin) <= (int)(settings.accuracy/2))
             {
                 isMoving = false;
                 maxHit = false;
@@ -116,7 +119,7 @@ void linearActuator::runActuator() // main control loop fcn
     }
 }
 
-int linearActuator::getPosition() // fetches position (to send to GUI)
+int linearActuator::getPositionRaw() // fetches position (to send to GUI)
 {
     return sendPacket(commands.get_feedback,0);
 }
@@ -148,7 +151,8 @@ void linearActuator::actuatorReceivePosition(int input) // position input from G
 void linearActuator::setVelocity(int velocity) // sets velocity
 {
     sendPacket(commands.set_speed,velocity);
-    actuatorSendVelocity(velocity);
+    actuatorSendVelocityRaw(velocity);
+    actuatorSendVelocityMetric(convertVelToMetric(velocity));
 }
 
 void linearActuator::actuatorReceiveVelocity(int input) // velocity input from GUI
@@ -203,4 +207,14 @@ void linearActuator::delay(int millisecondsToWait) // from internet
     {
         QCoreApplication::processEvents( QEventLoop::AllEvents, 100 );
     }
+}
+
+float linearActuator::convertPosToMetric(int rawValue)
+{
+    return ((rawValue*actuatorStrokeLength)/1024); // output mm
+}
+
+float linearActuator::convertVelToMetric(int rawValue)
+{
+    return 100.0*rawValue/1024;
 }

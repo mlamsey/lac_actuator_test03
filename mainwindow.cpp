@@ -3,7 +3,6 @@
 #include "linearactuator.h"
 
 bool actuatorConnection = false; // For crash prevention via if() checks
-float actuatorStrokeLength = 30; // mm
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -30,20 +29,24 @@ void MainWindow::actuatorFetchDT(int input)
     ui->label_Refresh->setText("Refresh Rate: " + QString::number(Hz, 'f', 1) + "Hz");
 }
 
-void MainWindow::actuatorFetchPosition(int input)
+void MainWindow::actuatorFetchPositionRaw(int input)
 {
     ui->posStatus->setText(QString::number(input));
-
-    float realPosition = actuatorStrokeLength*input/1024;
-    ui->posStatusEngr->setText(QString::number(realPosition, 'f', 2) + " mm");
 }
 
-void MainWindow::actuatorFetchVelocity(int input)
+void MainWindow::actuatorFetchPositionMetric(float input)
+{
+    ui->posStatusEngr->setText(QString::number(input, 'f', 2) + " mm");
+}
+
+void MainWindow::actuatorFetchVelocityRaw(int input)
 {
     ui->velStatus->setText(QString::number(input));
+}
 
-    float realVelocity = 100.0*input/1024;
-    ui->velStatusEngr->setText(QString::number(realVelocity, 'f', 2) + "%");
+void MainWindow::actuatorFetchVelocityMetric(float input)
+{
+    ui->velStatusEngr->setText(QString::number(input, 'f', 2) + "%");
 }
 
 void MainWindow::actuatorFetchOscillate(bool state)
@@ -87,11 +90,13 @@ void MainWindow::initializeActuatorThread()
 
     // Position control + feedback
     connect(this,SIGNAL(actuatorPushPosition(int)),actuatorWorker,SLOT(actuatorReceivePosition(int)));
-    connect(actuatorWorker,SIGNAL(actuatorSendPosition(int)),this,SLOT(actuatorFetchPosition(int)));
+    connect(actuatorWorker,SIGNAL(actuatorSendPositionRaw(int)),this,SLOT(actuatorFetchPositionRaw(int)));
+    connect(actuatorWorker,SIGNAL(actuatorSendPositionMetric(float)),this,SLOT(actuatorFetchPositionMetric(float)));
 
     // Velocity control + feedback
     connect(this,SIGNAL(actuatorPushVelocity(int)),actuatorWorker,SLOT(actuatorReceiveVelocity(int)));
-    connect(actuatorWorker,SIGNAL(actuatorSendVelocity(int)),this,SLOT(actuatorFetchVelocity(int)));
+    connect(actuatorWorker,SIGNAL(actuatorSendVelocityRaw(int)),this,SLOT(actuatorFetchVelocityRaw(int)));
+    connect(actuatorWorker,SIGNAL(actuatorSendVelocityMetric(float)),this,SLOT(actuatorFetchVelocityMetric(float)));
 
     // Oscillator toggle
     connect(this,SIGNAL(actuatorPushOscillate(int, int)),actuatorWorker,SLOT(actuatorReceiveOscillate(int, int)));

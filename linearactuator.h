@@ -52,7 +52,7 @@ private:
     void runActuator();
 
     // Controls + feedback
-    int getPosition();
+    int getPositionRaw();
     void setPosition(int position);
     void setVelocity(int velocity);
 
@@ -61,6 +61,10 @@ private:
     void processFinished();
     void delay(int millisecondsToWait);
     void toggleOscillation(int min, int max);
+
+    // Unit conversions
+    float convertPosToMetric(int rawValue);
+    float convertVelToMetric(int rawValue);
 
 public slots:
     // Startup
@@ -76,8 +80,10 @@ signals:
     // Feedback, generally
     void actuatorConnected();
     void actuatorSendDT(int);
-    void actuatorSendPosition(int);
-    void actuatorSendVelocity(int);
+    void actuatorSendPositionRaw(int);
+    void actuatorSendPositionMetric(float);
+    void actuatorSendVelocityRaw(int);
+    void actuatorSendVelocityMetric(float);
     void actuatorSendOscillate(bool);
     void finished();
 };

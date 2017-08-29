@@ -18,8 +18,10 @@ public:
 public slots:
     void actuatorConnected();
     void actuatorFetchDT(int input);
-    void actuatorFetchPosition(int input);
-    void actuatorFetchVelocity(int input);
+    void actuatorFetchPositionRaw(int input);
+    void actuatorFetchPositionMetric(float input);
+    void actuatorFetchVelocityRaw(int input);
+    void actuatorFetchVelocityMetric(float input);
     void actuatorFetchOscillate(bool state);
 
 private slots:
